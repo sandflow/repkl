@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<PackingList xmlns="http://www.smpte-ra.org/schemas/2067-2/2016/PKL" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Id>urn:uuid:e8aa8652-f9de-4d8d-b337-53123066605e</Id>
+  <AnnotationText language="en">1s of image and audio</AnnotationText>
+  <IssueDate>2022-01-29T17:05:05Z</IssueDate>
+  <Issuer language="en">Sandflow Consiulting LLC</Issuer>
+  <Creator language="en">IMF-Tool 1.7.350</Creator>
+  <AssetList>
+    <Asset>
+      <Id>urn:uuid:0b976350-bea1-4e62-ba07-f32b28aaaf30</Id>
+      <Hash>vE6fVvdzUVC6+YE/tM/vyY8qJ2Y=</Hash>
+      <Size>15830</Size>
+      <Type>text/xml</Type>
+      <OriginalFileName language="en">CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml</OriginalFileName>
+      <HashAlgorithm Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+    </Asset>
+    <Asset>
+      <Id>urn:uuid:35e05073-878e-4b2f-b69d-2369f25adfc9</Id>
+      <Hash>nVRLfBq+LuP4/aMrgSSg03XwnKg=</Hash>
+      <Size>72224</Size>
+      <Type>application/mxf</Type>
+      <OriginalFileName language="en">countdown-small.mxf</OriginalFileName>
+      <HashAlgorithm Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+    </Asset>
+    <Asset>
+      <Id>urn:uuid:d01bc6be-ae2f-436b-9705-c402e1d92212</Id>
+      <Hash>RB2PQUbbil0rRRTrsvQRj1M7uE0=</Hash>
+      <Size>305022</Size>
+      <Type>application/mxf</Type>
+      <OriginalFileName language="en">WAV_d01bc6be-ae2f-436b-9705-c402e1d92212.mxf</OriginalFileName>
+      <HashAlgorithm Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+    </Asset>
+  </AssetList>
+</PackingList>

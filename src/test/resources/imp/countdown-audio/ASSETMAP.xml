@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<AssetMap xmlns="http://www.smpte-ra.org/schemas/429-9/2007/AM" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Id>urn:uuid:61837eba-55b5-4a18-95a0-333a291a72f0</Id>
+  <AnnotationText language="en">1s of image and audio</AnnotationText>
+  <Creator language="en">IMF-Tool 1.7.350</Creator>
+  <VolumeCount>1</VolumeCount>
+  <IssueDate>2022-01-29T17:05:05Z</IssueDate>
+  <Issuer language="en">Sandflow Consiulting LLC</Issuer>
+  <AssetList>
+    <Asset>
+      <Id>urn:uuid:0b976350-bea1-4e62-ba07-f32b28aaaf30</Id>
+      <ChunkList>
+        <Chunk>
+          <Path>CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml</Path>
+        </Chunk>
+      </ChunkList>
+    </Asset>
+    <Asset>
+      <Id>urn:uuid:35e05073-878e-4b2f-b69d-2369f25adfc9</Id>
+      <ChunkList>
+        <Chunk>
+          <Path>countdown-small.mxf</Path>
+        </Chunk>
+      </ChunkList>
+    </Asset>
+    <Asset>
+      <Id>urn:uuid:d01bc6be-ae2f-436b-9705-c402e1d92212</Id>
+      <ChunkList>
+        <Chunk>
+          <Path>WAV_d01bc6be-ae2f-436b-9705-c402e1d92212.mxf</Path>
+        </Chunk>
+      </ChunkList>
+    </Asset>
+    <Asset>
+      <Id>urn:uuid:e8aa8652-f9de-4d8d-b337-53123066605e</Id>
+      <PackingList>true</PackingList>
+      <ChunkList>
+        <Chunk>
+          <Path>PKL_e8aa8652-f9de-4d8d-b337-53123066605e.xml</Path>
+        </Chunk>
+      </ChunkList>
+    </Asset>
+  </AssetList>
+</AssetMap>
