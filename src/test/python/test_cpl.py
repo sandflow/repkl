@@ -23,14 +23,21 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
+import unittest
 import xml.etree.ElementTree as ET
-from typing import AbstractSet
-import re
 
-NS_RE = re.compile(r"{([^}]+)")
+import repkl.cpl
 
-def collect_resource_ids(cpl: ET.Element) -> AbstractSet[str]:
+class CPLTest(unittest.TestCase):
 
-  ns = { "cpl": NS_RE.match(cpl.tag).group(1)}
+  def test_collect_resource_ids(self):
 
-  return {e.text.lower() for e in cpl.findall(".//cpl:Resource/cpl:TrackFileId", ns)}
+    tree = ET.parse("src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml")
+
+    resource_ids = repkl.cpl.collect_resource_ids(tree.getroot())
+
+    self.assertEqual(len(resource_ids), 2)
+
+    self.assertIn("urn:uuid:35e05073-878e-4b2f-b69d-2369f25adfc9", resource_ids)
+    self.assertIn("urn:uuid:d01bc6be-ae2f-436b-9705-c402e1d92212", resource_ids)
