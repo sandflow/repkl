@@ -32,19 +32,31 @@ import re
 class Asset:
   id: str
   annotation_text: Optional[str]
+  annotation_text_lang: Optional[str]
   hash: str
   size: int
   type: str
   original_filename: Optional[str]
+  original_filename_lang: Optional[str]
   hash_algorithm: str
 
 def make_asset(asset_element: ET.Element, ns: dict) -> Asset:
 
   orig_fn_element = asset_element.find("pkl:OriginalFileName", ns)
-  original_filename = orig_fn_element.text if orig_fn_element is not None else None
+  if orig_fn_element is not None:
+    original_filename = orig_fn_element.text
+    original_filename_lang = orig_fn_element.attrib.get("language")
+  else:
+    original_filename = None
+    original_filename_lang = None
 
   annot_element = asset_element.find("pkl:AnnotationText", ns)
-  annotation_text = annot_element.text if annot_element is not None else None
+  if annot_element is not None:
+    annotation_text = annot_element.text
+    annotation_text_lang = annot_element.attrib.get("language")
+  else:
+    annotation_text = None
+    annotation_text_lang = None
 
   algo_element = asset_element.find("pkl:HashAlgorithm", ns)
   hash_algorithm = algo_element.attrib["Algorithm"] if algo_element is not None else "http://www.w3.org/2000/09/xmldsig#sha1"
@@ -52,10 +64,12 @@ def make_asset(asset_element: ET.Element, ns: dict) -> Asset:
   return Asset(
     asset_element.find("pkl:Id", ns).text.lower(),
     annotation_text,
+    annotation_text_lang,
     asset_element.find("pkl:Hash", ns).text,
     int(asset_element.find("pkl:Size", ns).text),
     asset_element.find("pkl:Type", ns).text,
     original_filename,
+    original_filename_lang,
     hash_algorithm
     )
 

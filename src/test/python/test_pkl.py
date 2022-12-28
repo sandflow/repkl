@@ -37,4 +37,15 @@ class PKLTest(unittest.TestCase):
 
     assets = repkl.pkl.collect_assets(tree.getroot())
 
-    self.assertTrue("urn:uuid:0b976350-bea1-4e62-ba07-f32b28aaaf30" in assets)
+    self.assertEqual(len(assets), 3)
+
+    asset = assets["urn:uuid:0b976350-bea1-4e62-ba07-f32b28aaaf30"]
+    self.assertEqual(asset.id, "urn:uuid:0b976350-bea1-4e62-ba07-f32b28aaaf30")
+    self.assertEqual(asset.hash, "vE6fVvdzUVC6+YE/tM/vyY8qJ2Y=")
+    self.assertEqual(asset.size, 15830)
+    self.assertEqual(asset.type, "text/xml")
+    self.assertEqual(asset.original_filename, "CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml")
+    self.assertEqual(asset.original_filename_lang, "en")
+    self.assertEqual(asset.hash_algorithm, "http://www.w3.org/2000/09/xmldsig#sha1")
+    self.assertIsNone(asset.annotation_text)
+    self.assertIsNone(asset.annotation_text_lang)
