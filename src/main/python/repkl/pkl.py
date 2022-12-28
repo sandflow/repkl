@@ -24,9 +24,13 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import xml.etree.ElementTree as ET
-from typing import Optional, Mapping
+from typing import Optional, Mapping, Iterable
 from dataclasses import dataclass
 import re
+import uuid
+import datetime
+
+ET.register_namespace("pkl2016", "http://www.smpte-ra.org/schemas/2067-2/2016/PKL")
 
 @dataclass(frozen=True)
 class Asset:
@@ -82,3 +86,33 @@ def collect_assets(pkl: ET.Element) -> Mapping[str, Asset]:
   assets = [make_asset(e, ns) for e in pkl.findall(".//pkl:Asset", ns)]
 
   return {e.id: e for e in assets}
+
+def make_text_element(tag: str, text: str) -> ET.Element:
+  element = ET.Element(tag)
+  element.text = text
+  return element
+
+def make_uuid() -> str:
+  return f"urn:uuid:{str(uuid.uuid4())}"
+
+def make_pkl(assets: Iterable[Asset]) -> ET.ElementTree:
+
+  pkl_element = ET.Element("pkl2016:PackingList")
+
+  pkl_element.append(make_text_element("pkl2016:Id", make_uuid()))
+  pkl_element.append(make_text_element("pkl2016:IssueDate", datetime.datetime.now().astimezone().replace(microsecond=0).isoformat()))
+  # TODO: issuer
+  # TODO: creator
+
+  asset_list = ET.Element("pkl2016:AssetList")
+
+  for asset in assets:
+    asset_element = ET.Element("pkl2016:Asset")
+
+    asset_element.append(make_text_element("pkl2016:Id", asset.id))
+
+    asset_list.append(asset_element)
+
+  pkl_element.append(asset_list)
+
+  return ET.ElementTree(pkl_element)

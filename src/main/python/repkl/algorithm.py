@@ -69,13 +69,15 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
   # collect all assets
 
   path_resolver: typing.Mapping[str, pathlib.Path] = {}
-  asset_resolver: typing.Mapping[str, repkl.pkl.Asset] = {}
+  pkl_asset_resolver: typing.Mapping[str, repkl.pkl.Asset] = {}
+  am_asset_resolver: typing.Mapping[str, repkl.assetmap.Asset] = {}
 
   for p in am_dir_paths:
     am_doc = ET.parse(p.joinpath(ASSETMAP_FILENAME))
     am_assets = repkl.assetmap.collect_assets(am_doc.getroot())
 
     # TODO: detect duplicates
+    am_asset_resolver.update(am_assets)
     path_resolver.update({a.id : p.joinpath(a.path) for a in am_assets.values()})
 
     for pkl_entry in filter(lambda x: x.is_pkl, am_assets.values()):
@@ -83,7 +85,7 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
       pkl_assets = repkl.pkl.collect_assets(pkl_doc.getroot())
 
       # TODO: detect duplicates
-      asset_resolver.update(pkl_assets)
+      pkl_asset_resolver.update(pkl_assets)
 
 
   # process OV
@@ -93,14 +95,22 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
   ov_resource_ids.add(repkl.cpl.get_id(ov_doc.getroot()))
   ov_resource_ids.update(repkl.cpl.collect_resource_ids(ov_doc.getroot()))
 
-  print([path_resolver[e] for e in ov_resource_ids])
+  # create PKL
+
+  ov_pkl = repkl.pkl.make_pkl(pkl_asset_resolver[i] for i in ov_resource_ids)
+
+  ov_pkl.write(ov.dest_dir_path.joinpath("PKL.xml"))
 
 if __name__ == "__main__":
+
+  ov_path = pathlib.Path("build/imp1")
+  ov_path.mkdir(parents=True, exist_ok=True)
+
   process(
     Instruction(
       pathlib.Path("src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml"),
       Instruction.Operation.COPY,
-      "build/imp1"
+      ov_path
       ),
       None,
       None
