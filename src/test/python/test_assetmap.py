@@ -23,32 +23,28 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
+import unittest
 import xml.etree.ElementTree as ET
-from typing import Mapping
-from dataclasses import dataclass
-import re
 
-@dataclass(frozen=True)
-class Asset:
-  id: str
-  path: str
-  is_pkl: bool
+import repkl.assetmap
 
-NS_RE = re.compile(r"{([^}]+)")
+class AssetMapTest(unittest.TestCase):
 
-def make_asset(asset_element: ET.Element, ns: dict) -> Asset:
-  id = asset_element.find("am:Id", ns).text.lower()
-  path = asset_element.find(".//am:Path", ns).text
+  def test_collect_assets(self):
 
-  pkl_element = asset_element.find("am:PackingList", ns)
-  is_pkl = pkl_element is not None and pkl_element.text.lower() in ("true", "1")
+    tree = ET.parse("src/test/resources/imp/countdown-audio/ASSETMAP.xml")
 
-  return Asset(id, path, is_pkl)
+    assets = repkl.assetmap.collect_assets(tree.getroot())
 
-def collect_assets(am: ET.Element) -> Mapping[str, Asset]:
+    self.assertEqual(len(assets), 4)
 
-  ns = { "am": NS_RE.match(am.tag).group(1)}
+    pkl = assets["urn:uuid:e8aa8652-f9de-4d8d-b337-53123066605e"]
+    self.assertEqual(pkl.id, "urn:uuid:e8aa8652-f9de-4d8d-b337-53123066605e")
+    self.assertTrue(pkl.is_pkl)
+    self.assertEqual(pkl.path, "PKL_e8aa8652-f9de-4d8d-b337-53123066605e.xml")
 
-  assets = [make_asset(e, ns) for e in am.findall(".//am:Asset", ns)]
-
-  return {e.id: e for e in assets}
+    wav = assets["urn:uuid:d01bc6be-ae2f-436b-9705-c402e1d92212"]
+    self.assertEqual(wav.id, "urn:uuid:d01bc6be-ae2f-436b-9705-c402e1d92212")
+    self.assertFalse(wav.is_pkl)
+    self.assertEqual(wav.path, "WAV_d01bc6be-ae2f-436b-9705-c402e1d92212.mxf")
