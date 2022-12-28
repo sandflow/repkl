@@ -111,7 +111,7 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
 
   pkl_fn = f"PKL_{str(uuid.UUID(ov_pkl.id))}.xml"
 
-  ov_pkl.to_element().write(ov.dest_dir_path.joinpath(pkl_fn))
+  ov_pkl.write(ov.dest_dir_path.joinpath(pkl_fn))
 
   # build Asset Map for the OV
 
@@ -130,7 +130,7 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
     is_pkl=True
   ))
 
-  ov_am.to_element().write(ov.dest_dir_path.joinpath("ASSETMAP.xml"))
+  ov_am.write(ov.dest_dir_path.joinpath("ASSETMAP.xml"))
 
 if __name__ == "__main__":
 

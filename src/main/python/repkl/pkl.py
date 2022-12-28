@@ -25,7 +25,7 @@
 
 from __future__ import annotations
 import xml.etree.ElementTree as ET
-from typing import Optional, List
+from typing import Optional, List, IO
 from dataclasses import dataclass, field
 
 from repkl.utils import get_ns, make_text_element, make_uuid, make_iso_ts
@@ -151,3 +151,6 @@ class PackingList:
     pkl_element.append(asset_list)
 
     return ET.ElementTree(pkl_element)
+
+  def write(self, fp: IO):
+    self.to_element().write(fp, encoding="utf-8")
