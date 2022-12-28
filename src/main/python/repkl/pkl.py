@@ -23,12 +23,12 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
 import xml.etree.ElementTree as ET
-from typing import Optional, Mapping, Iterable
-from dataclasses import dataclass
-import re
-import uuid
-import datetime
+from typing import Optional, List
+from dataclasses import dataclass, field
+
+from repkl.utils import get_ns, make_text_element, make_uuid, make_iso_ts
 
 ET.register_namespace("pkl2016", "http://www.smpte-ra.org/schemas/2067-2/2016/PKL")
 
@@ -44,75 +44,91 @@ class Asset:
   original_filename_lang: Optional[str]
   hash_algorithm: str
 
-def make_asset(asset_element: ET.Element, ns: dict) -> Asset:
+  @staticmethod
+  def from_element(asset_element: ET.Element) -> Asset:
+    ns = {"pkl": get_ns(asset_element)}
 
-  orig_fn_element = asset_element.find("pkl:OriginalFileName", ns)
-  if orig_fn_element is not None:
-    original_filename = orig_fn_element.text
-    original_filename_lang = orig_fn_element.attrib.get("language")
-  else:
-    original_filename = None
-    original_filename_lang = None
+    orig_fn_element = asset_element.find("pkl:OriginalFileName", ns)
+    if orig_fn_element is not None:
+      original_filename = orig_fn_element.text
+      original_filename_lang = orig_fn_element.attrib.get("language")
+    else:
+      original_filename = None
+      original_filename_lang = None
 
-  annot_element = asset_element.find("pkl:AnnotationText", ns)
-  if annot_element is not None:
-    annotation_text = annot_element.text
-    annotation_text_lang = annot_element.attrib.get("language")
-  else:
-    annotation_text = None
-    annotation_text_lang = None
+    annot_element = asset_element.find("pkl:AnnotationText", ns)
+    if annot_element is not None:
+      annotation_text = annot_element.text
+      annotation_text_lang = annot_element.attrib.get("language")
+    else:
+      annotation_text = None
+      annotation_text_lang = None
 
-  algo_element = asset_element.find("pkl:HashAlgorithm", ns)
-  hash_algorithm = algo_element.attrib["Algorithm"] if algo_element is not None else "http://www.w3.org/2000/09/xmldsig#sha1"
+    algo_element = asset_element.find("pkl:HashAlgorithm", ns)
+    hash_algorithm = algo_element.attrib["Algorithm"] if algo_element is not None else "http://www.w3.org/2000/09/xmldsig#sha1"
 
-  return Asset(
-    asset_element.find("pkl:Id", ns).text.lower(),
-    annotation_text,
-    annotation_text_lang,
-    asset_element.find("pkl:Hash", ns).text,
-    int(asset_element.find("pkl:Size", ns).text),
-    asset_element.find("pkl:Type", ns).text,
-    original_filename,
-    original_filename_lang,
-    hash_algorithm
+    return Asset(
+      asset_element.find("pkl:Id", ns).text.lower(),
+      annotation_text,
+      annotation_text_lang,
+      asset_element.find("pkl:Hash", ns).text,
+      int(asset_element.find("pkl:Size", ns).text),
+      asset_element.find("pkl:Type", ns).text,
+      original_filename,
+      original_filename_lang,
+      hash_algorithm
+      )
+
+@dataclass
+class PackingList:
+  id: str
+  creator: str
+  issuer: str
+  issue_date: str
+  assets: List[Asset] = field(default_factory=list)
+  creator_lang: Optional[str] = None
+  issuer_lang: Optional[str] = None
+  annotation: Optional[str] = None
+  annotation_lang: Optional[str] = None
+
+  @staticmethod
+  def from_element(pkl_element: ET.Element) -> PackingList:
+    ns = { "pkl": get_ns(pkl_element)}
+
+    pkl = PackingList(
+      creator=pkl_element.find("pkl:Creator", ns).text,
+      creator_lang=pkl_element.find("pkl:Creator", ns).attrib.get("language"),
+      issuer=pkl_element.find("pkl:Issuer", ns).text,
+      issuer_lang=pkl_element.find("pkl:Issuer", ns).attrib.get("language"),
+      id=pkl_element.find("pkl:Id", ns).text,
+      issue_date=pkl_element.find("pkl:IssueDate", ns).text
     )
 
-NS_RE = re.compile(r"{([^}]+)")
+    annotation_elem = pkl_element.find("pkl:AnnotationText", ns)
+    if annotation_elem is not None:
+      pkl.annotation = annotation_elem.text
+      pkl.annotation_lang = annotation_elem.attrib.get("language")
 
-def collect_assets(pkl: ET.Element) -> Mapping[str, Asset]:
+    pkl.assets = [Asset.from_element(e) for e in pkl_element.findall(".//pkl:Asset", ns)]
 
-  ns = { "pkl": NS_RE.match(pkl.tag).group(1)}
+    return pkl
 
-  assets = [make_asset(e, ns) for e in pkl.findall(".//pkl:Asset", ns)]
+  def to_element(self) -> ET.ElementTree:
 
-  return {e.id: e for e in assets}
+    pkl_element = ET.Element("pkl2016:PackingList")
 
-def make_text_element(tag: str, text: str) -> ET.Element:
-  element = ET.Element(tag)
-  element.text = text
-  return element
+    pkl_element.append(make_text_element("pkl2016:Id", make_uuid()))
+    pkl_element.append(make_text_element("pkl2016:IssueDate", make_iso_ts()))
+    pkl_element.append(make_text_element("pkl2016:Issuer", self.issuer, self.issuer_lang))
+    pkl_element.append(make_text_element("pkl2016:Creator", self.creator, self.creator_lang))
 
-def make_uuid() -> str:
-  return f"urn:uuid:{str(uuid.uuid4())}"
+    asset_list = ET.Element("pkl2016:AssetList")
 
-def make_pkl(assets: Iterable[Asset]) -> ET.ElementTree:
+    for asset in self.assets:
+      asset_element = ET.Element("pkl2016:Asset")
+      asset_element.append(make_text_element("pkl2016:Id", asset.id))
+      asset_list.append(asset_element)
 
-  pkl_element = ET.Element("pkl2016:PackingList")
+    pkl_element.append(asset_list)
 
-  pkl_element.append(make_text_element("pkl2016:Id", make_uuid()))
-  pkl_element.append(make_text_element("pkl2016:IssueDate", datetime.datetime.now().astimezone().replace(microsecond=0).isoformat()))
-  # TODO: issuer
-  # TODO: creator
-
-  asset_list = ET.Element("pkl2016:AssetList")
-
-  for asset in assets:
-    asset_element = ET.Element("pkl2016:Asset")
-
-    asset_element.append(make_text_element("pkl2016:Id", asset.id))
-
-    asset_list.append(asset_element)
-
-  pkl_element.append(asset_list)
-
-  return ET.ElementTree(pkl_element)
+    return ET.ElementTree(pkl_element)

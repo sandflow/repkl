@@ -28,9 +28,11 @@ import uuid
 import datetime
 import re
 
-def make_text_element(tag: str, text: str) -> ET.Element:
+def make_text_element(tag: str, text: str, lang: str = None) -> ET.Element:
   element = ET.Element(tag)
   element.text = text
+  if lang is not None:
+    element.attrib["language"] = lang
   return element
 
 def make_uuid() -> str:

@@ -31,15 +31,18 @@ import repkl.pkl
 
 class PKLTest(unittest.TestCase):
 
-  def test_collect_assets(self):
+  def test_from_element(self):
 
     tree = ET.parse("src/test/resources/imp/countdown-audio/PKL_e8aa8652-f9de-4d8d-b337-53123066605e.xml")
 
-    assets = repkl.pkl.collect_assets(tree.getroot())
+    pkl = repkl.pkl.PackingList.from_element(tree.getroot())
 
-    self.assertEqual(len(assets), 3)
+    self.assertEqual(pkl.id, "urn:uuid:e8aa8652-f9de-4d8d-b337-53123066605e")
 
-    asset = assets["urn:uuid:0b976350-bea1-4e62-ba07-f32b28aaaf30"]
+    self.assertEqual(len(pkl.assets), 3)
+
+    asset = next(a for a in pkl.assets if a.id == "urn:uuid:0b976350-bea1-4e62-ba07-f32b28aaaf30")
+
     self.assertEqual(asset.id, "urn:uuid:0b976350-bea1-4e62-ba07-f32b28aaaf30")
     self.assertEqual(asset.hash, "vE6fVvdzUVC6+YE/tM/vyY8qJ2Y=")
     self.assertEqual(asset.size, 15830)
