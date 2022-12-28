@@ -23,6 +23,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import annotations
 import xml.etree.ElementTree as ET
 from typing import List, Optional
 from dataclasses import dataclass, field
@@ -36,7 +37,7 @@ class Asset:
   is_pkl: bool
 
   @staticmethod
-  def from_element(asset_elem: ET.Element):
+  def from_element(asset_elem: ET.Element) -> Asset:
     ns = { "am": get_ns(asset_elem)}
 
     is_pkl_element = asset_elem.find("am:PackingList", ns)
@@ -61,7 +62,7 @@ class AssetMap:
   annotation_lang: Optional[str] = None
 
   @staticmethod
-  def from_element(am_elem: ET.Element):
+  def from_element(am_elem: ET.Element) -> AssetMap:
     ns = { "am": get_ns(am_elem)}
 
     am = AssetMap(

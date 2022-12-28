@@ -74,18 +74,18 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
 
   for p in am_dir_paths:
     am_doc = ET.parse(p.joinpath(ASSETMAP_FILENAME))
-    am_assets = repkl.assetmap.collect_assets(am_doc.getroot())
+    am = repkl.assetmap.AssetMap.from_element(am_doc.getroot())
 
     # TODO: detect duplicates
-    am_asset_resolver.update(am_assets)
-    path_resolver.update({a.id : p.joinpath(a.path) for a in am_assets.values()})
+    am_asset_resolver.update({a.id: a for a in am.assets})
+    path_resolver.update({a.id : p.joinpath(a.path) for a in am.assets})
 
-    for pkl_entry in filter(lambda x: x.is_pkl, am_assets.values()):
+    for pkl_entry in filter(lambda x: x.is_pkl, am.assets):
       pkl_doc = ET.parse(p.joinpath(pkl_entry.path))
-      pkl_assets = repkl.pkl.collect_assets(pkl_doc.getroot())
+      pkl = repkl.pkl.PackingList.from_element(pkl_doc.getroot())
 
       # TODO: detect duplicates
-      pkl_asset_resolver.update(pkl_assets)
+      pkl_asset_resolver.update({a.id: a for a in pkl.assets})
 
 
   # process OV
@@ -97,9 +97,11 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
 
   # create PKL
 
-  ov_pkl = repkl.pkl.make_pkl(pkl_asset_resolver[i] for i in ov_resource_ids)
+  ov_pkl = repkl.pkl.PackingList(
+    assets=[pkl_asset_resolver[i] for i in ov_resource_ids]
+  )
 
-  ov_pkl.write(ov.dest_dir_path.joinpath("PKL.xml"))
+  ov_pkl.to_element().write(ov.dest_dir_path.joinpath("PKL.xml"))
 
 if __name__ == "__main__":
 
