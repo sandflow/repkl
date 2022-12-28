@@ -28,7 +28,9 @@ import xml.etree.ElementTree as ET
 from typing import List, Optional
 from dataclasses import dataclass, field
 
-from repkl.utils import get_ns
+from repkl.utils import get_ns, make_text_element, make_uuid, make_iso_ts
+
+AM2007_NS = "http://www.smpte-ra.org/schemas/429-9/2007/AM"
 
 @dataclass(frozen=True)
 class Asset:
@@ -48,13 +50,32 @@ class Asset:
       is_pkl_element is not None and is_pkl_element.text.lower() in ("true", "1")
       )
 
+  def to_element(self) -> ET.Element:
+    asset_elem = ET.Element(f"{{{AM2007_NS}}}Asset")
+
+    asset_elem.append(make_text_element(f"{{{AM2007_NS}}}Id", self.id))
+
+    if self.is_pkl:
+      asset_elem.append(make_text_element(f"{{{AM2007_NS}}}PackingList", "true"))
+
+    path_elem = make_text_element(f"{{{AM2007_NS}}}Path", self.path)
+
+    chunk_elem = ET.Element(f"{{{AM2007_NS}}}Chunk")
+    chunk_elem.append(path_elem)
+
+    chunklist_elem = ET.Element(f"{{{AM2007_NS}}}ChunkList")
+    chunklist_elem.append(chunk_elem)
+
+    asset_elem.append(chunklist_elem)
+
+    return asset_elem
 
 @dataclass
 class AssetMap:
-  creator: str
-  issuer: str
-  id: str
-  issue_date: str
+  creator: str = "n/a"
+  issuer: str = "n/a"
+  id: str = field(default_factory=make_uuid)
+  issue_date: str = field(default_factory=make_iso_ts)
   assets: List[Asset] = field(default_factory=list)
   creator_lang: Optional[str] = None
   issuer_lang: Optional[str] = None
@@ -82,3 +103,22 @@ class AssetMap:
     am.assets = [Asset.from_element(e) for e in am_elem.findall(".//am:Asset", ns)]
 
     return am
+
+  def to_element(self) -> ET.ElementTree:
+
+    am_element = ET.Element(f"{{{AM2007_NS}}}AssetMap")
+
+    am_element.append(make_text_element(f"{{{AM2007_NS}}}Id", self.id))
+    am_element.append(make_text_element(f"{{{AM2007_NS}}}Creator", self.creator, self.creator_lang))
+    am_element.append(make_text_element(f"{{{AM2007_NS}}}VolumeCount", "1"))
+    am_element.append(make_text_element(f"{{{AM2007_NS}}}IssueDate",self.issue_date))
+    am_element.append(make_text_element(f"{{{AM2007_NS}}}Issuer", self.issuer, self.issuer_lang))
+
+    asset_list = ET.Element(f"{{{AM2007_NS}}}AssetList")
+
+    for asset in self.assets:
+      asset_list.append(asset.to_element())
+
+    am_element.append(asset_list)
+
+    return ET.ElementTree(am_element)

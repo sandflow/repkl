@@ -29,6 +29,7 @@ import enum
 from dataclasses import dataclass
 import xml.etree.ElementTree as ET
 import logging
+import uuid
 
 import repkl.assetmap
 import repkl.pkl
@@ -88,20 +89,36 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
       pkl_asset_resolver.update({a.id: a for a in pkl.assets})
 
 
-  # process OV
+  # collect assets for the OV
 
   ov_doc = ET.parse(ov.src_cpl_path)
   ov_resource_ids = set()
   ov_resource_ids.add(repkl.cpl.get_id(ov_doc.getroot()))
   ov_resource_ids.update(repkl.cpl.collect_resource_ids(ov_doc.getroot()))
 
-  # create PKL
+  # create PKL for the OV
 
   ov_pkl = repkl.pkl.PackingList(
     assets=[pkl_asset_resolver[i] for i in ov_resource_ids]
   )
 
-  ov_pkl.to_element().write(ov.dest_dir_path.joinpath("PKL.xml"))
+  pkl_fn = f"PKL_{str(uuid.UUID(ov_pkl.id))}.xml"
+
+  ov_pkl.to_element().write(ov.dest_dir_path.joinpath(pkl_fn))
+
+  # build Asset Map for the OV
+
+  ov_am = repkl.assetmap.AssetMap(
+    assets=[am_asset_resolver[i] for i in ov_resource_ids]
+  )
+
+  ov_am.assets.append(repkl.assetmap.Asset(
+    id=ov_pkl.id,
+    path=pkl_fn,
+    is_pkl=True
+  ))
+
+  ov_am.to_element().write(ov.dest_dir_path.joinpath("ASSETMAP.xml"))
 
 if __name__ == "__main__":
 
