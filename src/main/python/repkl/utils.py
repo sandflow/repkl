@@ -23,31 +23,25 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-import unittest
 import xml.etree.ElementTree as ET
+import uuid
+import datetime
+import re
 
-import repkl.assetmap as assetmap
+def make_text_element(tag: str, text: str) -> ET.Element:
+  element = ET.Element(tag)
+  element.text = text
+  return element
 
-class AssetMapTest(unittest.TestCase):
+def make_uuid() -> str:
+  return f"urn:uuid:{str(uuid.uuid4())}"
 
-  def test_from_element(self):
+def make_iso_ts(t: datetime.datetime=None) -> str:
+  if t is None:
+    t = datetime.datetime.now()
+  return t.astimezone().replace(microsecond=0).isoformat()
 
-    tree = ET.parse("src/test/resources/imp/countdown-audio/ASSETMAP.xml")
+NS_RE = re.compile(r"{([^}]+)")
 
-    am = assetmap.AssetMap.from_element(tree.getroot())
-
-    self.assertEqual(am.issuer, "Sandflow Consiulting LLC")
-    self.assertEqual(am.issuer_lang, "en")
-
-    self.assertEqual(len(am.assets), 4)
-
-    asset = next(a for a in am.assets if a.id == "urn:uuid:e8aa8652-f9de-4d8d-b337-53123066605e")
-    self.assertEqual(asset.id, "urn:uuid:e8aa8652-f9de-4d8d-b337-53123066605e")
-    self.assertTrue(asset.is_pkl)
-    self.assertEqual(asset.path, "PKL_e8aa8652-f9de-4d8d-b337-53123066605e.xml")
-
-    asset = next(a for a in am.assets if a.id == "urn:uuid:d01bc6be-ae2f-436b-9705-c402e1d92212")
-    self.assertEqual(asset.id, "urn:uuid:d01bc6be-ae2f-436b-9705-c402e1d92212")
-    self.assertFalse(asset.is_pkl)
-    self.assertEqual(asset.path, "WAV_d01bc6be-ae2f-436b-9705-c402e1d92212.mxf")
+def get_ns(elem: ET.Element) -> str:
+  return NS_RE.match(elem.tag).group(1)

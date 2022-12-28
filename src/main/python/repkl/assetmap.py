@@ -24,9 +24,10 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import xml.etree.ElementTree as ET
-from typing import Mapping
-from dataclasses import dataclass
-import re
+from typing import List, Optional
+from dataclasses import dataclass, field
+
+from repkl.utils import get_ns
 
 @dataclass(frozen=True)
 class Asset:
@@ -34,21 +35,49 @@ class Asset:
   path: str
   is_pkl: bool
 
-NS_RE = re.compile(r"{([^}]+)")
+  @staticmethod
+  def from_element(asset_elem: ET.Element):
+    ns = { "am": get_ns(asset_elem)}
 
-def make_asset(asset_element: ET.Element, ns: dict) -> Asset:
-  id = asset_element.find("am:Id", ns).text.lower()
-  path = asset_element.find(".//am:Path", ns).text
+    is_pkl_element = asset_elem.find("am:PackingList", ns)
 
-  pkl_element = asset_element.find("am:PackingList", ns)
-  is_pkl = pkl_element is not None and pkl_element.text.lower() in ("true", "1")
+    return Asset(
+      asset_elem.find("am:Id", ns).text.lower(),
+      asset_elem.find(".//am:Path", ns).text,
+      is_pkl_element is not None and is_pkl_element.text.lower() in ("true", "1")
+      )
 
-  return Asset(id, path, is_pkl)
 
-def collect_assets(am: ET.Element) -> Mapping[str, Asset]:
+@dataclass
+class AssetMap:
+  creator: str
+  issuer: str
+  id: str
+  issue_date: str
+  assets: List[Asset] = field(default_factory=list)
+  creator_lang: Optional[str] = None
+  issuer_lang: Optional[str] = None
+  annotation: Optional[str] = None
+  annotation_lang: Optional[str] = None
 
-  ns = { "am": NS_RE.match(am.tag).group(1)}
+  @staticmethod
+  def from_element(am_elem: ET.Element):
+    ns = { "am": get_ns(am_elem)}
 
-  assets = [make_asset(e, ns) for e in am.findall(".//am:Asset", ns)]
+    am = AssetMap(
+      creator=am_elem.find("am:Creator", ns).text,
+      creator_lang=am_elem.find("am:Creator", ns).attrib.get("language"),
+      issuer=am_elem.find("am:Issuer", ns).text,
+      issuer_lang=am_elem.find("am:Issuer", ns).attrib.get("language"),
+      id=am_elem.find("am:Id", ns).text,
+      issue_date=am_elem.find("am:IssueDate", ns).text
+    )
 
-  return {e.id: e for e in assets}
+    annotation_elem = am_elem.find("am:AnnotationText", ns)
+    if annotation_elem is not None:
+      am.annotation = annotation_elem.text
+      am.annotation_lang = annotation_elem.attrib.get("language")
+
+    am.assets = [Asset.from_element(e) for e in am_elem.findall(".//am:Asset", ns)]
+
+    return am
