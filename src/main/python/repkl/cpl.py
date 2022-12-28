@@ -34,3 +34,8 @@ def collect_resource_ids(cpl: ET.Element) -> AbstractSet[str]:
   ns = { "cpl": NS_RE.match(cpl.tag).group(1)}
 
   return {e.text.lower() for e in cpl.findall(".//cpl:Resource/cpl:TrackFileId", ns)}
+
+def get_id(cpl: ET.Element) -> str:
+  ns = { "cpl": NS_RE.match(cpl.tag).group(1)}
+
+  return cpl.find("cpl:Id", ns).text.lower()
