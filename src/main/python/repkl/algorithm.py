@@ -35,6 +35,7 @@ import repkl.assetmap
 import repkl.pkl
 import repkl.cpl
 
+CREATOR_STRING = "repkl"
 
 @dataclass(frozen=True)
 class Instruction:
@@ -92,14 +93,20 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
   # collect assets for the OV
 
   ov_doc = ET.parse(ov.src_cpl_path)
+  ov_comp = repkl.cpl.Composition.from_element(ov_doc.getroot())
   ov_resource_ids = set()
-  ov_resource_ids.add(repkl.cpl.get_id(ov_doc.getroot()))
-  ov_resource_ids.update(repkl.cpl.collect_resource_ids(ov_doc.getroot()))
+  ov_resource_ids.add(ov_comp.id)
+  ov_resource_ids.update(ov_comp.resource_ids)
 
   # create PKL for the OV
 
   ov_pkl = repkl.pkl.PackingList(
-    assets=[pkl_asset_resolver[i] for i in ov_resource_ids]
+    assets=[pkl_asset_resolver[i] for i in ov_resource_ids],
+    creator=CREATOR_STRING,
+    issuer=ov_comp.issuer,
+    issuer_lang=ov_comp.issuer_lang,
+    annotation=ov_comp.content_title,
+    annotation_lang=ov_comp.content_title_lang
   )
 
   pkl_fn = f"PKL_{str(uuid.UUID(ov_pkl.id))}.xml"
@@ -109,7 +116,12 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
   # build Asset Map for the OV
 
   ov_am = repkl.assetmap.AssetMap(
-    assets=[am_asset_resolver[i] for i in ov_resource_ids]
+    assets=[am_asset_resolver[i] for i in ov_resource_ids],
+    creator=CREATOR_STRING,
+    issuer=ov_comp.issuer,
+    issuer_lang=ov_comp.issuer_lang,
+    annotation=ov_comp.content_title,
+    annotation_lang=ov_comp.content_title_lang
   )
 
   ov_am.assets.append(repkl.assetmap.Asset(

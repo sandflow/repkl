@@ -136,9 +136,12 @@ class PackingList:
     pkl_element = ET.Element(f"{{{PKL2016_NS}}}PackingList")
 
     pkl_element.append(make_text_element(f"{{{PKL2016_NS}}}Id", self.id))
+    if self.annotation is not None:
+      pkl_element.append(make_text_element(f"{{{PKL2016_NS}}}AnnotationText", self.annotation, self.annotation_lang))
     pkl_element.append(make_text_element(f"{{{PKL2016_NS}}}IssueDate",self.issue_date))
     pkl_element.append(make_text_element(f"{{{PKL2016_NS}}}Issuer", self.issuer, self.issuer_lang))
     pkl_element.append(make_text_element(f"{{{PKL2016_NS}}}Creator", self.creator, self.creator_lang))
+
 
     asset_list = ET.Element(f"{{{PKL2016_NS}}}AssetList")
 

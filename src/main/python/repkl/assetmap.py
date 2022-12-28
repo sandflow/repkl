@@ -109,6 +109,8 @@ class AssetMap:
     am_element = ET.Element(f"{{{AM2007_NS}}}AssetMap")
 
     am_element.append(make_text_element(f"{{{AM2007_NS}}}Id", self.id))
+    if self.annotation is not None:
+      am_element.append(make_text_element(f"{{{AM2007_NS}}}AnnotationText", self.annotation, self.annotation_lang))
     am_element.append(make_text_element(f"{{{AM2007_NS}}}Creator", self.creator, self.creator_lang))
     am_element.append(make_text_element(f"{{{AM2007_NS}}}VolumeCount", "1"))
     am_element.append(make_text_element(f"{{{AM2007_NS}}}IssueDate",self.issue_date))

@@ -35,7 +35,9 @@ class CPLTest(unittest.TestCase):
 
     tree = ET.parse("src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml")
 
-    resource_ids = repkl.cpl.collect_resource_ids(tree.getroot())
+    composition = repkl.cpl.Composition.from_element(tree.getroot())
+
+    resource_ids = composition.resource_ids
 
     self.assertEqual(len(resource_ids), 2)
 
