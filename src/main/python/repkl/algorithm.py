@@ -26,7 +26,6 @@
 import pathlib
 import typing
 import enum
-from dataclasses import dataclass
 import xml.etree.ElementTree as ET
 import logging
 import uuid
@@ -40,24 +39,15 @@ CREATOR_STRING = "repkl"
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger("repkl")
 
-@dataclass(frozen=True)
-class Instruction:
-
-  class Operation(enum.Enum):
-    COPY = 1
-    MOVE = 2
-
-  src_cpl_path: pathlib.Path
-  operation: Operation
-  dest_dir_path: pathlib.Path
+class Operation(enum.Enum):
+  COPY = "copy"
+  MOVE = "move"
 
 ASSETMAP_FILENAME = "ASSETMAP.xml"
 
-# def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], mapped_file_set_paths: typing.Optional[typing.List[pathlib.Path]]):
-
 def process(target_cpl_path: pathlib.Path,
             dest_dir_path: pathlib.Path,
-            operation: Instruction.Operation,
+            operation: Operation,
             base_cpl_path: typing.Optional[pathlib.Path] = None,
             mapped_file_set_paths: typing.Optional[typing.List[pathlib.Path]] = None
   ):
@@ -154,11 +144,11 @@ def process(target_cpl_path: pathlib.Path,
 
   for i in target_asset_ids:
 
-    target_path = path_resolver[i]
+    src_path = path_resolver[i]
     am_asset = am_asset_resolver[i]
     dst_path = dest_dir_path.joinpath(am_asset.path)
 
-    if operation == Instruction.Operation.COPY:
+    if operation == Operation.COPY:
       LOGGER.info("Copying %s to %s", am_asset.path, dst_path)
     else:
       LOGGER.info("Moving %s to %s", am_asset.path, dst_path)
@@ -172,5 +162,5 @@ if __name__ == "__main__":
       target_cpl_path=pathlib.Path("src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml"),
       base_cpl_path=pathlib.Path("src/test/resources/imp/countdown/CPL_bb2ce11c-1bb6-4781-8e69-967183d02b9b.xml"),
       dest_dir_path=target_path,
-      operation=Instruction.Operation.COPY
+      operation=Operation.COPY
   )
