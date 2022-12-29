@@ -37,6 +37,9 @@ import repkl.cpl
 
 CREATOR_STRING = "repkl"
 
+logging.basicConfig(level=logging.INFO)
+LOGGER = logging.getLogger("repkl")
+
 @dataclass(frozen=True)
 class Instruction:
 
@@ -60,7 +63,7 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
 
   else:
     # infer mapped file sets from CPL paths
-    logging.info("Inferring mapped file sets from input CPL paths")
+    LOGGER.info("Inferring mapped file sets from input CPL paths")
 
     am_dir_paths = set()
     am_dir_paths.add(ov.src_cpl_path.parent.resolve())
@@ -92,36 +95,37 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
 
   # collect assets for the OV
 
-  ov_doc = ET.parse(ov.src_cpl_path)
-  ov_comp = repkl.cpl.Composition.from_element(ov_doc.getroot())
+  ov_cpl = repkl.cpl.Composition.from_element(ET.parse(ov.src_cpl_path).getroot())
   ov_resource_ids = set()
-  ov_resource_ids.add(ov_comp.id)
-  ov_resource_ids.update(ov_comp.resource_ids)
+  ov_resource_ids.add(ov_cpl.id)
+  ov_resource_ids.update(ov_cpl.resource_ids)
 
   # create PKL for the OV
 
   ov_pkl = repkl.pkl.PackingList(
     assets=[pkl_asset_resolver[i] for i in ov_resource_ids],
     creator=CREATOR_STRING,
-    issuer=ov_comp.issuer,
-    issuer_lang=ov_comp.issuer_lang,
-    annotation=ov_comp.content_title,
-    annotation_lang=ov_comp.content_title_lang
+    issuer=ov_cpl.issuer,
+    issuer_lang=ov_cpl.issuer_lang,
+    annotation=ov_cpl.content_title,
+    annotation_lang=ov_cpl.content_title_lang
   )
 
   pkl_fn = f"PKL_{str(uuid.UUID(ov_pkl.id))}.xml"
 
   ov_pkl.write(ov.dest_dir_path.joinpath(pkl_fn))
 
+  LOGGER.info("OV PackingList written (%s)", pkl_fn)
+
   # build Asset Map for the OV
 
   ov_am = repkl.assetmap.AssetMap(
     assets=[am_asset_resolver[i] for i in ov_resource_ids],
     creator=CREATOR_STRING,
-    issuer=ov_comp.issuer,
-    issuer_lang=ov_comp.issuer_lang,
-    annotation=ov_comp.content_title,
-    annotation_lang=ov_comp.content_title_lang
+    issuer=ov_cpl.issuer,
+    issuer_lang=ov_cpl.issuer_lang,
+    annotation=ov_cpl.content_title,
+    annotation_lang=ov_cpl.content_title_lang
   )
 
   ov_am.assets.append(repkl.assetmap.Asset(
@@ -131,6 +135,21 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
   ))
 
   ov_am.write(ov.dest_dir_path.joinpath("ASSETMAP.xml"))
+
+  LOGGER.info("OV AssetMap written")
+
+  # process assets
+
+  for i in ov_resource_ids:
+    am_asset = am_asset_resolver[i]
+
+    src_path = ov.src_cpl_path.joinpath(am_asset.path)
+    dst_path = ov.dest_dir_path.joinpath(am_asset.path)
+
+    if ov.operation == Instruction.Operation.COPY:
+      LOGGER.info("Copying %s to %s", am_asset.path, dst_path)
+    else:
+      LOGGER.info("Moving %s to %s", am_asset.path, dst_path)
 
 if __name__ == "__main__":
 
