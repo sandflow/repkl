@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<PackingList xmlns="http://www.smpte-ra.org/schemas/2067-2/2016/PKL" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Id>urn:uuid:c8f6716b-0dfa-4062-8569-98fc77637287</Id>
+  <IssueDate>2022-01-07T22:20:29Z</IssueDate>
+  <Issuer language="en">sandflow-consulting</Issuer>
+  <Creator language="en">IMF-Tool 1.7.350</Creator>
+  <AssetList>
+    <Asset>
+      <Id>urn:uuid:35e05073-878e-4b2f-b69d-2369f25adfc9</Id>
+      <Hash>nVRLfBq+LuP4/aMrgSSg03XwnKg=</Hash>
+      <Size>72224</Size>
+      <Type>application/mxf</Type>
+      <OriginalFileName language="en">countdown-small.mxf</OriginalFileName>
+      <HashAlgorithm Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+    </Asset>
+    <Asset>
+      <Id>urn:uuid:bb2ce11c-1bb6-4781-8e69-967183d02b9b</Id>
+      <Hash>yEJMwX5beFPCg4gf85nU4IKDdtU=</Hash>
+      <Size>8010</Size>
+      <Type>text/xml</Type>
+      <OriginalFileName language="en">CPL_bb2ce11c-1bb6-4781-8e69-967183d02b9b.xml</OriginalFileName>
+      <HashAlgorithm Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+    </Asset>
+  </AssetList>
+</PackingList>

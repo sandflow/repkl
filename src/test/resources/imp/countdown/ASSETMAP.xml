@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<AssetMap xmlns="http://www.smpte-ra.org/schemas/429-9/2007/AM" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Id>urn:uuid:acc1d3c8-702d-4ab5-83ba-33f450ceacb7</Id>
+  <Creator language="en">IMF-Tool 1.7.350</Creator>
+  <VolumeCount>1</VolumeCount>
+  <IssueDate>2022-01-07T22:20:29Z</IssueDate>
+  <Issuer language="en">sandflow-consulting</Issuer>
+  <AssetList>
+    <Asset>
+      <Id>urn:uuid:35e05073-878e-4b2f-b69d-2369f25adfc9</Id>
+      <ChunkList>
+        <Chunk>
+          <Path>countdown-small.mxf</Path>
+        </Chunk>
+      </ChunkList>
+    </Asset>
+    <Asset>
+      <Id>urn:uuid:bb2ce11c-1bb6-4781-8e69-967183d02b9b</Id>
+      <ChunkList>
+        <Chunk>
+          <Path>CPL_bb2ce11c-1bb6-4781-8e69-967183d02b9b.xml</Path>
+        </Chunk>
+      </ChunkList>
+    </Asset>
+    <Asset>
+      <Id>urn:uuid:c8f6716b-0dfa-4062-8569-98fc77637287</Id>
+      <PackingList>true</PackingList>
+      <ChunkList>
+        <Chunk>
+          <Path>PKL_c8f6716b-0dfa-4062-8569-98fc77637287.xml</Path>
+        </Chunk>
+      </ChunkList>
+    </Asset>
+  </AssetList>
+</AssetMap>

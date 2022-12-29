@@ -34,8 +34,8 @@ from repkl.utils import get_ns
 class Composition:
   resource_ids: AbstractSet[str]
   id: str
-  creator: str
-  issuer: str
+  creator: Optional[str] = None
+  issuer: Optional[str] = None
   creator_lang: Optional[str] = None
   issuer_lang: Optional[str] = None
   annotation: Optional[str] = None
@@ -49,14 +49,16 @@ class Composition:
 
     annot_element = cpl_elem.find("cpl:AnnotationText", ns)
     ct_element = cpl_elem.find("cpl:ContentTitle", ns)
+    creator_element = cpl_elem.find("cpl:Creator", ns)
+    issuer_element = cpl_elem.find("cpl:Issuer", ns)
 
     return Composition(
       resource_ids={e.text.lower() for e in cpl_elem.findall(".//cpl:Resource/cpl:TrackFileId", ns)},
       id=cpl_elem.find("cpl:Id", ns).text.lower(),
-      creator=cpl_elem.find("cpl:Creator", ns).text,
-      creator_lang=cpl_elem.find("cpl:Creator", ns).attrib.get("language"),
-      issuer=cpl_elem.find("cpl:Issuer", ns).text,
-      issuer_lang=cpl_elem.find("cpl:Issuer", ns).attrib.get("language"),
+      creator=creator_element.text if creator_element is not None else None,
+      creator_lang=creator_element.attrib.get("language") if creator_element is not None else None,
+      issuer=issuer_element.text if issuer_element is not None else None,
+      issuer_lang=issuer_element.attrib.get("language") if issuer_element is not None else None,
       annotation=annot_element.text if annot_element is not None else None,
       annotation_lang=annot_element.attrib.get("language") if annot_element is not None else None,
       content_title=ct_element.text if ct_element is not None else None,

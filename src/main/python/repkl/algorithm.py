@@ -170,6 +170,7 @@ if __name__ == "__main__":
 
   process(
       target_cpl_path=pathlib.Path("src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml"),
+      base_cpl_path=pathlib.Path("src/test/resources/imp/countdown/CPL_bb2ce11c-1bb6-4781-8e69-967183d02b9b.xml"),
       dest_dir_path=target_path,
       operation=Instruction.Operation.COPY
   )
