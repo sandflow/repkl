@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Unit tests
+        env:
+          PYTHONPATH: src/main/python
+        run: |
+          python -m unittest discover -v -s src/test/python
+          mkdir -p build
