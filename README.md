@@ -32,6 +32,16 @@ export PYTHONPATH=src/main/python
 pipenv run python src/main/python/replk/cli.py <path to the target CPL> <path to the destination directory>
 ```
 
+## Command line
+
+Run the following for command line options.
+
+`python src/main/python/replk/cli.py -h`
+
+Example (creates a supplementatl delivery where the assets are symlinked to the source assets):
+
+`python src/main/python/replk/cli.py --action symlink --ov delivery/CPL_bb2ce11c-1bb6-4781-8e69-967183d02b9b delivery/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml new_delivery/`
+
 ## Dependencies
 
 ### Runtime
