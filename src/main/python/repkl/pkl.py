@@ -89,7 +89,7 @@ class Asset:
     asset_elem.append(make_text_element(f"{{{PKL2016_NS}}}Size", str(self.size)))
     asset_elem.append(make_text_element(f"{{{PKL2016_NS}}}Type", self.type))
     if self.original_filename is not None:
-      asset_elem.append(make_text_element(f"{{{PKL2016_NS}}}Type", self.original_filename, self.original_filename_lang))
+      asset_elem.append(make_text_element(f"{{{PKL2016_NS}}}OriginalFileName", self.original_filename, self.original_filename_lang))
 
     hash_element = ET.Element(f"{{{PKL2016_NS}}}HashAlgorithm")
     hash_element.attrib["Algorithm"] = self.hash_algorithm
