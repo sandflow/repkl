@@ -55,7 +55,7 @@ ASSETMAP_FILENAME = "ASSETMAP.xml"
 
 # def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], mapped_file_set_paths: typing.Optional[typing.List[pathlib.Path]]):
 
-def process(src_cpl_path: pathlib.Path,
+def process(target_cpl_path: pathlib.Path,
             dest_dir_path: pathlib.Path,
             operation: Instruction.Operation,
             base_cpl_path: typing.Optional[pathlib.Path] = None,
@@ -73,7 +73,7 @@ def process(src_cpl_path: pathlib.Path,
     LOGGER.info("Inferring mapped file sets from input CPL paths")
 
     am_dir_paths = set()
-    am_dir_paths.add(src_cpl_path.parent.resolve())
+    am_dir_paths.add(target_cpl_path.parent.resolve())
     if base_cpl_path is not None:
       am_dir_paths.add(base_cpl_path.parent.resolve())
 
@@ -98,57 +98,63 @@ def process(src_cpl_path: pathlib.Path,
       # TODO: detect duplicates
       pkl_asset_resolver.update({a.id: a for a in pkl.assets})
 
+  # collect assets for the Target
 
-  # collect assets for the OV
+  target_cpl = repkl.cpl.Composition.from_element(ET.parse(target_cpl_path).getroot())
+  target_asset_ids = set()
+  target_asset_ids.add(target_cpl.id)
+  target_asset_ids.update(target_cpl.resource_ids)
 
-  ov_cpl = repkl.cpl.Composition.from_element(ET.parse(src_cpl_path).getroot())
-  ov_resource_ids = set()
-  ov_resource_ids.add(ov_cpl.id)
-  ov_resource_ids.update(ov_cpl.resource_ids)
+  # subtract assets already present in the base
 
-  # create PKL for the OV
+  if base_cpl_path is not None:
+    base_cpl = repkl.cpl.Composition.from_element(ET.parse(base_cpl_path).getroot())
+    target_asset_ids = target_asset_ids.difference(base_cpl.resource_ids)
 
-  ov_pkl = repkl.pkl.PackingList(
-    assets=[pkl_asset_resolver[i] for i in ov_resource_ids],
+
+  # create PKL for the Target
+
+  target_pkl = repkl.pkl.PackingList(
+    assets=[pkl_asset_resolver[i] for i in target_asset_ids],
     creator=CREATOR_STRING,
-    issuer=ov_cpl.issuer,
-    issuer_lang=ov_cpl.issuer_lang,
-    annotation=ov_cpl.content_title,
-    annotation_lang=ov_cpl.content_title_lang
+    issuer=target_cpl.issuer,
+    issuer_lang=target_cpl.issuer_lang,
+    annotation=target_cpl.content_title,
+    annotation_lang=target_cpl.content_title_lang
   )
 
-  pkl_fn = f"PKL_{str(uuid.UUID(ov_pkl.id))}.xml"
+  pkl_fn = f"PKL_{str(uuid.UUID(target_pkl.id))}.xml"
 
-  ov_pkl.write(dest_dir_path.joinpath(pkl_fn))
+  target_pkl.write(dest_dir_path.joinpath(pkl_fn))
 
-  LOGGER.info("OV PackingList written (%s)", pkl_fn)
+  LOGGER.info("Target PackingList written (%s)", pkl_fn)
 
-  # build Asset Map for the OV
+  # build Asset Map for the Target
 
-  ov_am = repkl.assetmap.AssetMap(
-    assets=[am_asset_resolver[i] for i in ov_resource_ids],
+  target_am = repkl.assetmap.AssetMap(
+    assets=[am_asset_resolver[i] for i in target_asset_ids],
     creator=CREATOR_STRING,
-    issuer=ov_cpl.issuer,
-    issuer_lang=ov_cpl.issuer_lang,
-    annotation=ov_cpl.content_title,
-    annotation_lang=ov_cpl.content_title_lang
+    issuer=target_cpl.issuer,
+    issuer_lang=target_cpl.issuer_lang,
+    annotation=target_cpl.content_title,
+    annotation_lang=target_cpl.content_title_lang
   )
 
-  ov_am.assets.append(repkl.assetmap.Asset(
-    id=ov_pkl.id,
+  target_am.assets.append(repkl.assetmap.Asset(
+    id=target_pkl.id,
     path=pkl_fn,
     is_pkl=True
   ))
 
-  ov_am.write(dest_dir_path.joinpath("ASSETMAP.xml"))
+  target_am.write(dest_dir_path.joinpath("ASSETMAP.xml"))
 
-  LOGGER.info("OV AssetMap written")
+  LOGGER.info("Target AssetMap written")
 
   # process assets
 
-  for i in ov_resource_ids:
+  for i in target_asset_ids:
 
-    src_path = path_resolver[i]
+    target_path = path_resolver[i]
     am_asset = am_asset_resolver[i]
     dst_path = dest_dir_path.joinpath(am_asset.path)
 
@@ -159,11 +165,11 @@ def process(src_cpl_path: pathlib.Path,
 
 if __name__ == "__main__":
 
-  ov_path = pathlib.Path("build/imp1")
-  ov_path.mkdir(parents=True, exist_ok=True)
+  target_path = pathlib.Path("build/imp1")
+  target_path.mkdir(parents=True, exist_ok=True)
 
   process(
-      src_cpl_path=pathlib.Path("src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml"),
-      dest_dir_path=ov_path,
+      target_cpl_path=pathlib.Path("src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml"),
+      dest_dir_path=target_path,
       operation=Instruction.Operation.COPY
   )
