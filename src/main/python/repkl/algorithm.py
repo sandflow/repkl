@@ -53,7 +53,14 @@ class Instruction:
 
 ASSETMAP_FILENAME = "ASSETMAP.xml"
 
-def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], mapped_file_set_paths: typing.Optional[typing.List[pathlib.Path]]):
+# def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], mapped_file_set_paths: typing.Optional[typing.List[pathlib.Path]]):
+
+def process(src_cpl_path: pathlib.Path,
+            dest_dir_path: pathlib.Path,
+            operation: Instruction.Operation,
+            base_cpl_path: typing.Optional[pathlib.Path] = None,
+            mapped_file_set_paths: typing.Optional[typing.List[pathlib.Path]] = None
+  ):
 
   # collect all mapped file sets
 
@@ -66,10 +73,9 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
     LOGGER.info("Inferring mapped file sets from input CPL paths")
 
     am_dir_paths = set()
-    am_dir_paths.add(ov.src_cpl_path.parent.resolve())
-    if sups is not None:
-      for sup in sups:
-        am_dir_paths.add(sup.src_cpl_path.parent.resolve())
+    am_dir_paths.add(src_cpl_path.parent.resolve())
+    if base_cpl_path is not None:
+      am_dir_paths.add(base_cpl_path.parent.resolve())
 
   # collect all assets
 
@@ -95,7 +101,7 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
 
   # collect assets for the OV
 
-  ov_cpl = repkl.cpl.Composition.from_element(ET.parse(ov.src_cpl_path).getroot())
+  ov_cpl = repkl.cpl.Composition.from_element(ET.parse(src_cpl_path).getroot())
   ov_resource_ids = set()
   ov_resource_ids.add(ov_cpl.id)
   ov_resource_ids.update(ov_cpl.resource_ids)
@@ -113,7 +119,7 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
 
   pkl_fn = f"PKL_{str(uuid.UUID(ov_pkl.id))}.xml"
 
-  ov_pkl.write(ov.dest_dir_path.joinpath(pkl_fn))
+  ov_pkl.write(dest_dir_path.joinpath(pkl_fn))
 
   LOGGER.info("OV PackingList written (%s)", pkl_fn)
 
@@ -134,19 +140,19 @@ def process(ov: Instruction, sups: typing.Optional[typing.List[Instruction]], ma
     is_pkl=True
   ))
 
-  ov_am.write(ov.dest_dir_path.joinpath("ASSETMAP.xml"))
+  ov_am.write(dest_dir_path.joinpath("ASSETMAP.xml"))
 
   LOGGER.info("OV AssetMap written")
 
   # process assets
 
   for i in ov_resource_ids:
+
+    src_path = path_resolver[i]
     am_asset = am_asset_resolver[i]
+    dst_path = dest_dir_path.joinpath(am_asset.path)
 
-    src_path = ov.src_cpl_path.joinpath(am_asset.path)
-    dst_path = ov.dest_dir_path.joinpath(am_asset.path)
-
-    if ov.operation == Instruction.Operation.COPY:
+    if operation == Instruction.Operation.COPY:
       LOGGER.info("Copying %s to %s", am_asset.path, dst_path)
     else:
       LOGGER.info("Moving %s to %s", am_asset.path, dst_path)
@@ -157,11 +163,7 @@ if __name__ == "__main__":
   ov_path.mkdir(parents=True, exist_ok=True)
 
   process(
-    Instruction(
-      pathlib.Path("src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml"),
-      Instruction.Operation.COPY,
-      ov_path
-      ),
-      None,
-      None
+      src_cpl_path=pathlib.Path("src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml"),
+      dest_dir_path=ov_path,
+      operation=Instruction.Operation.COPY
   )
