@@ -23,14 +23,38 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 import unittest
+import shutil
+import pathlib
 
 import repkl.cli
 
 class CLITest(unittest.TestCase):
 
+  def _prep_dir(self, path: pathlib.Path):
+    if path.exists():
+      shutil.rmtree(path)
+
+    path.mkdir(parents=True)
+
   def test_ov(self):
+
+    TEST_DIR = pathlib.Path("build/ov-imp")
+
+    self._prep_dir(TEST_DIR)
+
+    repkl.cli.main([
+      "--action",
+      "copy",
+      "src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml",
+      str(TEST_DIR)
+    ])
+
+  def test_vf(self):
+
+    TEST_DIR = pathlib.Path("build/vf-imp")
+
+    self._prep_dir(TEST_DIR)
 
     repkl.cli.main([
       "--action",
@@ -38,5 +62,66 @@ class CLITest(unittest.TestCase):
       "--ov",
       "src/test/resources/imp/countdown/CPL_bb2ce11c-1bb6-4781-8e69-967183d02b9b.xml",
       "src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml",
-      "build/imp1"
+      str(TEST_DIR)
+    ])
+
+  def test_dryrun(self):
+
+    TEST_DIR = pathlib.Path("build/vf-imp")
+
+    self._prep_dir(TEST_DIR)
+
+    repkl.cli.main([
+      "--action",
+      "dryrun",
+      "--ov",
+      "src/test/resources/imp/countdown/CPL_bb2ce11c-1bb6-4781-8e69-967183d02b9b.xml",
+      "src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml",
+      str(TEST_DIR)
+    ])
+
+  def test_symlinks(self):
+
+    TEST_DIR = pathlib.Path("build/symlink-imp")
+
+    self._prep_dir(TEST_DIR)
+
+    try:
+      test_src = TEST_DIR.joinpath("src.txt")
+      test_dest = TEST_DIR.joinpath("dst.txt")
+      test_dest.symlink_to(test_src)
+    except OSError as e:
+      raise unittest.SkipTest("Cannot create symlinks") from e
+
+    self._prep_dir(TEST_DIR)
+
+    repkl.cli.main([
+      "--action",
+      "symlink",
+      "src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml",
+      str(TEST_DIR)
+    ])
+
+  def test_move(self):
+
+    SRC_DIR = pathlib.Path("build/move-src-imp")
+
+    self._prep_dir(SRC_DIR)
+
+    repkl.cli.main([
+      "--action",
+      "copy",
+      "src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml",
+      str(SRC_DIR)
+    ])
+
+    TEST_DIR = pathlib.Path("build/move-imp")
+
+    self._prep_dir(TEST_DIR)
+
+    repkl.cli.main([
+      "--action",
+      "move",
+      str(SRC_DIR.joinpath("CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml")),
+      str(TEST_DIR)
     ])

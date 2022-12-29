@@ -29,6 +29,7 @@ import enum
 import xml.etree.ElementTree as ET
 import logging
 import uuid
+import shutil
 
 import repkl.assetmap
 import repkl.pkl
@@ -39,15 +40,18 @@ CREATOR_STRING = "repkl"
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger("repkl")
 
-class Operation(enum.Enum):
-  COPY = "copy"
-  MOVE = "move"
+class Action(enum.Enum):
+  COPY = "copy"           # copy assets
+  MOVE = "move"           # move assets
+  DRYRUN = "dryrun"       # do not write anything
+  SKIP = "skip"           # skip writing assets and only write the new PackingList and AssetMap
+  SYMLINK = "symlink"     # create symlinks to assets
 
 ASSETMAP_FILENAME = "ASSETMAP.xml"
 
 def process(target_cpl_path: pathlib.Path,
             dest_dir_path: pathlib.Path,
-            operation: Operation,
+            action: Action,
             base_cpl_path: typing.Optional[pathlib.Path] = None,
             mapped_file_set_paths: typing.Optional[typing.List[pathlib.Path]] = None
   ):
@@ -115,7 +119,8 @@ def process(target_cpl_path: pathlib.Path,
 
   pkl_fn = f"PKL_{str(uuid.UUID(target_pkl.id))}.xml"
 
-  target_pkl.write(dest_dir_path.joinpath(pkl_fn))
+  if action != Action.DRYRUN:
+    target_pkl.write(dest_dir_path.joinpath(pkl_fn))
 
   LOGGER.info("Target PackingList written (%s)", pkl_fn)
 
@@ -136,7 +141,8 @@ def process(target_cpl_path: pathlib.Path,
     is_pkl=True
   ))
 
-  target_am.write(dest_dir_path.joinpath("ASSETMAP.xml"))
+  if action != Action.DRYRUN:
+    target_am.write(dest_dir_path.joinpath("ASSETMAP.xml"))
 
   LOGGER.info("Target AssetMap written")
 
@@ -148,10 +154,17 @@ def process(target_cpl_path: pathlib.Path,
     am_asset = am_asset_resolver[i]
     dst_path = dest_dir_path.joinpath(am_asset.path)
 
-    if operation == Operation.COPY:
+    if action == Action.COPY:
       LOGGER.info("Copying %s to %s", am_asset.path, dst_path)
-    else:
+      shutil.copy(src_path, dst_path)
+    elif action == Action.MOVE:
       LOGGER.info("Moving %s to %s", am_asset.path, dst_path)
+      shutil.move(src_path, dst_path)
+    elif action == Action.SYMLINK:
+      LOGGER.info("Symlink from %s to %s", am_asset.path, dst_path)
+      dst_path.symlink_to(src_path)
+    else:
+      LOGGER.info("Skipping copying %s to %s", am_asset.path, dst_path)
 
 if __name__ == "__main__":
 
@@ -162,5 +175,5 @@ if __name__ == "__main__":
       target_cpl_path=pathlib.Path("src/test/resources/imp/countdown-audio/CPL_0b976350-bea1-4e62-ba07-f32b28aaaf30.xml"),
       base_cpl_path=pathlib.Path("src/test/resources/imp/countdown/CPL_bb2ce11c-1bb6-4781-8e69-967183d02b9b.xml"),
       dest_dir_path=target_path,
-      operation=Operation.COPY
+      action=Action.COPY
   )

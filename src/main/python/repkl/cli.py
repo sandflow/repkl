@@ -36,21 +36,26 @@ def main(argv):
     help="""Path to an Mapped File Set where the assets of the target CPL are found.
             If omitted, the target and OV CPLs are assumed to be at the root of a mapped file set.""")
   parser.add_argument('--ov', help="Path to an OV CPL. If omitted, the target CPL is an OV CPL.")
-  parser.add_argument('--action', choices=[e.value for e in repkl.algorithm.Operation],
-    default=repkl.algorithm.Operation.COPY.value,
+  parser.add_argument('--action', choices=[e.value for e in repkl.algorithm.Action],
+    default=repkl.algorithm.Action.COPY.value,
     help="Indicates whether assets will be copied or moved to the new Mapped File Set.")
 
   print(argv)
 
   args = parser.parse_args(argv)
 
-  target_path = pathlib.Path(args.target)
-  if not target_path.is_file():
+  action = repkl.algorithm.Action(args.action)
+
+  target_cpl_path = pathlib.Path(args.target)
+  if not target_cpl_path.is_file():
     raise ValueError("Target path is not to a file.")
 
   dest_path = pathlib.Path(args.dest)
-  if not dest_path.is_dir():
-    raise ValueError("Destination path is not to a directory.")
+  if action is not repkl.algorithm.Action.DRYRUN:
+    if not dest_path.is_dir():
+      raise ValueError("Destination path is not to a directory.")
+    if len(list(dest_path.iterdir())) > 0:
+      raise ValueError("Destination directory is not empty.")
 
   if args.delivery is not None:
     delivery_paths = [pathlib.Path(e) for e in args.delivery]
@@ -67,11 +72,11 @@ def main(argv):
     ov_path = None
 
   repkl.algorithm.process(
-    target_cpl_path=target_path,
+    target_cpl_path=target_cpl_path,
     dest_dir_path=dest_path,
     mapped_file_set_paths=delivery_paths,
     base_cpl_path=ov_path,
-    operation=repkl.algorithm.Operation(args.action)
+    action=repkl.algorithm.Action(args.action)
   )
 
 if __name__ == "__main__":
