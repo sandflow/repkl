@@ -28,7 +28,7 @@ import pathlib
 
 import repkl.algorithm
 
-def main(argv):
+def main(argv=None):
   parser = argparse.ArgumentParser(description="Repackages an IMF CPL into a new Mapped File Set.")
   parser.add_argument('target', help="Path of the target CPL that will be repackaged.")
   parser.add_argument('dest', help="Path of the directory where the new Mapped File Set is created")
@@ -39,8 +39,6 @@ def main(argv):
   parser.add_argument('--action', choices=[e.value for e in repkl.algorithm.Action],
     default=repkl.algorithm.Action.COPY.value,
     help="Indicates whether assets will be copied or moved to the new Mapped File Set.")
-
-  print(argv)
 
   args = parser.parse_args(argv)
 
