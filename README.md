@@ -56,12 +56,12 @@ docker build --rm --no-cache --network host -f Dockerfile -t sandflowrepkl:lates
 
 #### Normal binary command
 ```sh
-docker run --rm --network=host sandflowreplik:latest -h
+docker run --rm --network=host sandflowrepkl:latest -h
 ```
 
 #### Dev environment
 ```sh
-docker run -it --rm --network=host --entrypoint /bin/bash sandflowreplik:latest
+docker run -it --rm --network=host --entrypoint /bin/bash sandflowrepkl:latest
 [root@dockercontainer repkl]# pipenv run python src/main/python/repkl/cli.py -h
 
 ```
