@@ -1,6 +1,7 @@
 FROM centos:7.9.2009
 SHELL [ "/bin/bash", "-c" ]
 ENV SHELL=/bin/bash
+## NOTE TO USER: it's imparative that you call this docker file from a shell session that has its current directory as the root of the directory for the repkl repo. Otherwise errors will result when using this dockerfile.
 
 ## allow user to send values to these via --build-args http_proxy=http://my.proxyserver.net:<port> in the 'docker build'  process. If not passed, these are ignored.
 ENV HTTP_PROXY=${HTTP_PROXY}
