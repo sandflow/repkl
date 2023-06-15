@@ -49,7 +49,7 @@ Example (creates a supplementatl delivery where the assets are symlinked to the 
 ```sh
 # pwd must be dir with cloned repkl repo
 cd repkl/ 
-docker build --rm --no-cache --network host -f Dockerfile -t sandflowrepkl:latest .
+docker build --rm --no-cache --network host -f docker/centos/Dockerfile -t sandflowrepkl:latest .
 ```
 
 ### Run
