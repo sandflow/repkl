@@ -28,7 +28,7 @@ import xml.etree.ElementTree as ET
 from typing import List, Optional, IO
 from dataclasses import dataclass, field
 
-from repkl.utils import get_ns, make_text_element, make_uuid, make_iso_ts
+from repkl.utils import get_ns, make_text_element, make_uuid, make_iso_ts, pretty_print
 
 AM2007_NS = "http://www.smpte-ra.org/schemas/429-9/2007/AM"
 
@@ -126,4 +126,6 @@ class AssetMap:
     return ET.ElementTree(am_element)
 
   def write(self, fp: IO):
-    self.to_element().write(fp, encoding="utf-8")
+    doc = self.to_element()
+    pretty_print(doc)
+    doc.write(fp, encoding="utf-8")

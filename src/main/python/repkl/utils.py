@@ -47,3 +47,24 @@ NS_RE = re.compile(r"{([^}]+)")
 
 def get_ns(elem: ET.Element) -> str:
   return NS_RE.match(elem.tag).group(1)
+
+def pretty_print(doc: ET.ElementTree):
+
+  def _indent(elem: ET.Element, level: int):
+    children = list(elem)
+
+    if len(children) == 0:
+      return
+
+    indent = "\n" + ("  " * level)
+
+    elem.text = indent
+
+    for i in range(len(children) - 1):
+      _indent(children[i], level + 1)
+      children[i].tail = indent
+
+    _indent(children[-1], level + 1)
+    children[-1].tail = "\n" + ("  " * (level - 1))
+
+  _indent(doc.getroot(), 1)
