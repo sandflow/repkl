@@ -28,7 +28,7 @@ import xml.etree.ElementTree as ET
 from typing import Optional, List, IO
 from dataclasses import dataclass, field
 
-from repkl.utils import get_ns, make_text_element, make_uuid, make_iso_ts
+from repkl.utils import get_ns, make_text_element, make_uuid, make_iso_ts, pretty_print
 
 PKL2016_NS = "http://www.smpte-ra.org/schemas/2067-2/2016/PKL"
 
@@ -153,4 +153,6 @@ class PackingList:
     return ET.ElementTree(pkl_element)
 
   def write(self, fp: IO):
-    self.to_element().write(fp, encoding="utf-8")
+    doc = self.to_element()
+    pretty_print(doc)
+    doc.write(fp, encoding="utf-8")
